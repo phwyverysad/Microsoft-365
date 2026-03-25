@@ -19,15 +19,7 @@ const initTheme = () => {
 
 themeToggleBtn.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    themeIcon.style.transform = 'rotate(360deg) scale(0)';
-    setTimeout(() => {
-        setTheme(!isDark);
-        themeIcon.style.transform = 'rotate(0deg) scale(1)';
-    }, 200);
-});
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    if (!localStorage.getItem('theme')) setTheme(e.matches);
+    setTheme(!isDark);
 });
 
 initTheme();
@@ -55,156 +47,94 @@ const tableBody = document.getElementById('tableBody');
 languages.forEach((lang, index) => {
     const row = document.createElement('tr');
     row.style.animationDelay = `${index * 0.015}s`;
-    
     const name = lang[0].split(' [')[0];
     const code = lang[0].split(' [')[1].replace(']', '');
-    const langCode = lang[1];
-    
     row.innerHTML = `
-        <td>
-            <div class="lang-wrapper">
-                <span class="lang-name">${name}</span>
-                <span class="lang-badge">${code}</span>
-            </div>
-        </td>
-        <td><a href="https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x64&language=${langCode}&version=O16GA" class="download-btn online"><i class="fas fa-download"></i> x64</a></td>
-        <td><a href="https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x86&language=${langCode}&version=O16GA" class="download-btn online"><i class="fas fa-download"></i> x86</a></td>
-        <td><a href="https://officecdn.microsoft.com/db/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/${langCode}/O365ProPlusRetail.img" class="download-btn offline"><i class="fas fa-file-archive"></i> IMG</a></td>
+        <td><div class="lang-wrapper"><span class="lang-name">${name}</span><span class="lang-badge">${code}</span></div></td>
+        <td><a href="https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x64&language=${lang[1]}&version=O16GA" class="download-btn online"><i class="fas fa-download"></i> x64</a></td>
+        <td><a href="https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x86&language=${lang[1]}&version=O16GA" class="download-btn online"><i class="fas fa-download"></i> x86</a></td>
+        <td><a href="https://officecdn.microsoft.com/db/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/${lang[1]}/O365ProPlusRetail.img" class="download-btn offline"><i class="fas fa-file-archive"></i> IMG</a></td>
     `;
     tableBody.appendChild(row);
 });
 
-let toastTimeout;
 document.getElementById('activateM365').addEventListener('click', () => {
     const cmd = "irm http://raw.githubusercontent.com/phwyverysad/-/refs/heads/main/powershell/activate_365.ps1 | iex";
     navigator.clipboard.writeText(cmd).then(() => {
         const toast = document.getElementById('copyToast');
-        clearTimeout(toastTimeout);
-        toast.classList.remove('show');
-        setTimeout(() => {
-            toast.classList.add('show');
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
-        }, 100);
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
     });
 });
 
 document.getElementById('searchInput').addEventListener('input', function() {
     const val = this.value.toUpperCase();
     const rows = tableBody.getElementsByTagName('tr');
-    let delayCounter = 0;
     for (let row of rows) {
-        if (row.innerText.toUpperCase().includes(val)) {
-            row.style.display = '';
-            row.style.animation = 'none';
-            void row.offsetWidth;
-            row.style.animation = 'tableRowFade 0.4s forwards';
-            row.style.animationDelay = `${delayCounter * 0.015}s`;
-            delayCounter++;
-        } else {
-            row.style.display = 'none';
-        }
+        row.style.display = row.innerText.toUpperCase().includes(val) ? '' : 'none';
     }
 });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I") || (e.ctrlKey && e.key === "U")) {
-        e.preventDefault(); return false;
-    }
-});
-
-const createParticles = () => {
-    const container = document.getElementById('particles-container');
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        const size = Math.random() * 60 + 20;
-        particle.style.width = `${size}px`; particle.style.height = `${size}px`;
-        particle.style.left = `${Math.random() * 100}vw`;
-        particle.style.animationDuration = `${Math.random() * 20 + 15}s`;
-        particle.style.animationDelay = `${Math.random() * 10}s`;
-        container.appendChild(particle);
-    }
-};
-createParticles();
+const container = document.getElementById('particles-container');
+for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    const s = Math.random() * 60 + 20;
+    p.style.width = p.style.height = `${s}px`;
+    p.style.left = `${Math.random() * 100}vw`;
+    p.style.animationDuration = `${Math.random() * 20 + 15}s`;
+    p.style.animationDelay = `${Math.random() * 10}s`;
+    container.appendChild(p);
+}
 
 const screen = document.getElementById("screen");
 const xmlns = "http://www.w3.org/2000/svg";
 const xlinkns = "http://www.w3.org/1999/xlink";
-let width, height;
+let width = window.innerWidth, height = window.innerHeight;
+const pointer = { x: width / 2, y: height / 2 };
 
-const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+window.addEventListener("pointermove", (e) => { pointer.x = e.clientX; pointer.y = e.clientY; rad = 0; });
+window.addEventListener("resize", () => { width = window.innerWidth; height = window.innerHeight; });
 
-window.addEventListener(
-	"pointermove",
-	(e) => {
-		pointer.x = e.clientX;
-		pointer.y = e.clientY;
-		rad = 0;
-	},
-	false
-);
-
-const resize = () => {
-	width = window.innerWidth;
-	height = window.innerHeight;
-};
-
-window.addEventListener("resize", () => resize(), false);
-resize();
-
-const prepend = (use, i) => {
-	const elem = document.createElementNS(xmlns, "use");
-	elems[i].use = elem;
-	elem.setAttributeNS(xlinkns, "xlink:href", "#" + use);
-	screen.prepend(elem);
-};
-	
-const N = 40;
+const N = 45; 
 const elems = [];
-for (let i = 0; i < N; i++) elems[i] = { use: null, x: width / 2, y: 0 };
+for (let i = 0; i < N; i++) elems[i] = { use: null, x: width / 2, y: height / 2 };
 
-const radm = Math.min(pointer.x, pointer.y) - 20;
-let frm = Math.random();
-let rad = 0;
+const prepend = (useId, i) => {
+    const elem = document.createElementNS(xmlns, "use");
+    elems[i].use = elem;
+    elem.setAttributeNS(null, "href", "#" + useId);
+    screen.prepend(elem);
+};
 
 for (let i = 1; i < N; i++) {
-	if (i === 1) prepend("Cabeza", i);
-	else if (i === 8 || i === 14) prepend("Aletas", i);
-	else prepend("Espina", i);
+    if (i === 1) prepend("Cabeza", i);
+    else if (i === 8 || i === 14) prepend("Aletas", i);
+    else prepend("Espina", i);
 }
 
-const run = () => {
-	requestAnimationFrame(run);
-	let e = elems[0];
-	const ax = Math.cos(3 * frm) * rad * width / height;
-	const ay = Math.sin(4 * frm) * rad * height / width;
-	
-    e.x += (ax + pointer.x - e.x) / 10;
-	e.y += (ay + pointer.y - e.y) / 10;
-	
-    for (let i = 1; i < N; i++) {
-		let e = elems[i];
-		let ep = elems[i - 1];
-		const a = Math.atan2(e.y - ep.y, e.x - ep.x);
-		e.x += (ep.x - e.x + (Math.cos(a) * (100 - i)) / 5) / 4;
-		e.y += (ep.y - e.y + (Math.sin(a) * (100 - i)) / 5) / 4;
-		const s = (162 + 4 * (1 - i)) / 50;
-		e.use.setAttributeNS(
-			null,
-			"transform",
-			`translate(${(ep.x + e.x) / 2},${(ep.y + e.y) / 2}) rotate(${
-				(180 / Math.PI) * a
-			}) translate(${0},${0}) scale(${s},${s})`
-		);
-	}
-	
-    if (rad < radm) rad++;
-	frm += 0.003;
-	
-    if (rad > 60) {
-		pointer.x += (width / 2 - pointer.x) * 0.05;
-		pointer.y += (height / 2 - pointer.y) * 0.05;
-	}
-};
+let frm = Math.random(), rad = 0, radm = 120;
 
+const run = () => {
+    requestAnimationFrame(run);
+    let e = elems[0];
+    const ax = Math.cos(3 * frm) * rad * (width / height);
+    const ay = Math.sin(4 * frm) * rad * (height / width);
+    e.x += (ax + pointer.x - e.x) / 12;
+    e.y += (ay + pointer.y - e.y) / 12;
+    for (let i = 1; i < N; i++) {
+        let current = elems[i], prev = elems[i - 1];
+        const angle = Math.atan2(current.y - prev.y, current.x - prev.x);
+        current.x += (prev.x - current.x + (Math.cos(angle) * (100 - i)) / 6) / 5;
+        current.y += (prev.y - current.y + (Math.sin(angle) * (100 - i)) / 6) / 5;
+        const scale = (162 + 4 * (1 - i)) / 55;
+        current.use.setAttributeNS(null, "transform", `translate(${(prev.x + current.x) / 2}, ${(prev.y + current.y) / 2}) rotate(${(180 / Math.PI) * angle}) scale(${scale}, ${scale})`);
+    }
+    if (rad < radm) rad += 0.5;
+    frm += 0.003;
+    if (rad > 60) {
+        pointer.x += (width / 2 - pointer.x) * 0.05;
+        pointer.y += (height / 2 - pointer.y) * 0.05;
+    }
+};
 run();
